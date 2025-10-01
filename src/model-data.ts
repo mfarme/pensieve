@@ -15,6 +15,7 @@ export const modelData = [
   defineModel("ggml-large-v2", "3.09GB"),
   defineModel("ggml-large-v3-q5_0", "1.08GB"),
   defineModel("ggml-large-v3", "3.1GB"),
+  defineModel("ggml-large-v3-turbo-q5_0", "1.08GB"),
   defineModel("ggml-medium-q5_0", "539MB"),
   defineModel("ggml-medium", "1.53GB"),
   defineModel("ggml-medium.en-q5_0", "539MB"),

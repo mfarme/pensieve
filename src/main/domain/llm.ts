@@ -68,6 +68,7 @@ const getChatModel = async () => {
       await checkModel(llm.providerConfig.lmstudio.chatModel.model);
       return new ChatOpenAI({
         model: llm.providerConfig.lmstudio.chatModel.model,
+        apiKey: "lm-studio",
         configuration: {
           baseURL: llm.providerConfig.lmstudio.chatModel.baseUrl + "/v1",
         },
@@ -93,6 +94,7 @@ const getEmbeddings = async () => {
       await checkModel(llm.providerConfig.lmstudio.embeddings.model);
       return new OpenAIEmbeddings({
         model: llm.providerConfig.lmstudio.embeddings.model,
+        apiKey: "lm-studio",
         batchSize: llm.providerConfig.lmstudio.embeddings.batchSize,
         configuration: {
           baseURL: llm.providerConfig.lmstudio.chatModel.baseUrl + "/v1",

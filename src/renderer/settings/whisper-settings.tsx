@@ -66,6 +66,26 @@ export const WhisperSettings: FC = () => {
             </Flex>
           </RadioCards.Item>
         ))}
+        {installedModels
+          ?.filter(
+            (fileName) =>
+              fileName.endsWith(".bin") &&
+              !Object.values(modelData).some((m) => m.fileName === fileName),
+          )
+          .map((fileName) => {
+            const modelName = fileName.replace(".bin", "");
+            return (
+              <RadioCards.Item key={modelName} value={modelName}>
+                <Flex direction="column" width="100%">
+                  <Text weight="bold">{modelName}</Text>
+                  <Flex mt="4px" gap=".2rem" wrap="wrap">
+                    <Badge color="cyan">Custom Model</Badge>
+                    <Badge color="green">Installed</Badge>
+                  </Flex>
+                </Flex>
+              </RadioCards.Item>
+            );
+          })}
       </RadioCards.Root>
 
       <SettingsField

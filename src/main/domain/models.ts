@@ -51,18 +51,25 @@ export const getModels = async () => {
 };
 
 export const hasModel = async (modelId: string) => {
-  return fs.pathExists(path.join(modelFolder, modelData[modelId].fileName));
+  const fileName = modelData[modelId]?.fileName || `${modelId}.bin`;
+  return fs.pathExists(path.join(modelFolder, fileName));
 };
 
 export const getModelPath = (modelId: string) => {
-  return path.join(modelFolder, modelData[modelId].fileName);
+  const fileName = modelData[modelId]?.fileName || `${modelId}.bin`;
+  return path.join(modelFolder, fileName);
 };
 
 export const prepareConfiguredModel = async () => {
   const { model } = (await getSettings()).whisper;
   if (!(await hasModel(model))) {
-    postprocess.setStep("modelDownload");
-    await downloadModel(modelData[model].url, modelData[model].fileName);
+    // Only download if it's a predefined model
+    if (modelData[model]) {
+      postprocess.setStep("modelDownload");
+      await downloadModel(modelData[model].url, modelData[model].fileName);
+    } else {
+      throw new Error(`Model "${model}" not found in models folder. Please download it manually and place it in the models folder.`);
+    }
   }
   postprocess.setProgress("modelDownload", 1);
   return model;
