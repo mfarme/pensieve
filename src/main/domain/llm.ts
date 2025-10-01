@@ -13,6 +13,7 @@ import { RecordingTranscript, Settings } from "../../types";
 import { isNotNull } from "../../utils";
 import { getProgress, setProgress } from "./postprocess";
 import { pullModel } from "./ollama";
+import { checkModel } from "./lmstudio";
 
 const promptTemplate = `Be short and concise. 
 
@@ -63,6 +64,14 @@ const getChatModel = async () => {
     case "openai": {
       return new ChatOpenAI(llm.providerConfig.openai.chatModel);
     }
+    case "lmstudio":
+      await checkModel(llm.providerConfig.lmstudio.chatModel.model);
+      return new ChatOpenAI({
+        model: llm.providerConfig.lmstudio.chatModel.model,
+        configuration: {
+          baseURL: llm.providerConfig.lmstudio.chatModel.baseUrl + "/v1",
+        },
+      });
     default:
       throw new Error(`Invalid LLM provider: ${llm.provider}`);
   }
@@ -79,6 +88,15 @@ const getEmbeddings = async () => {
       return new OpenAIEmbeddings({
         ...llm.providerConfig.openai.embeddings,
         apiKey: llm.providerConfig.openai.chatModel.apiKey,
+      });
+    case "lmstudio":
+      await checkModel(llm.providerConfig.lmstudio.embeddings.model);
+      return new OpenAIEmbeddings({
+        model: llm.providerConfig.lmstudio.embeddings.model,
+        batchSize: llm.providerConfig.lmstudio.embeddings.batchSize,
+        configuration: {
+          baseURL: llm.providerConfig.lmstudio.chatModel.baseUrl + "/v1",
+        },
       });
     default:
       throw new Error(`Invalid LLM provider: ${llm.provider}`);

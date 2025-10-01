@@ -229,6 +229,56 @@ export const OllamaSettings: FC = () => {
   );
 };
 
+export const LmStudioSettings: FC = () => {
+  const form = useFormContext<Settings>();
+  return (
+    <>
+      <Heading mt="4rem" as="h2" size="4">
+        LM Studio Settings
+      </Heading>
+      <Text as="p" mb="1rem">
+        LM Studio provides a local OpenAI-compatible API server. Make sure LM
+        Studio is running with a model loaded before using it.
+      </Text>
+
+      <SettingsField label="Get LM Studio">
+        <Button
+          type="button"
+          onClick={async () => {
+            await mainApi.openWeb("https://lmstudio.ai/");
+          }}
+        >
+          Download and install LM Studio
+        </Button>
+      </SettingsField>
+
+      <SettingsTextField
+        label="Base URL"
+        description="LM Studio's local API server URL (default: http://localhost:1234)"
+        {...form.register("llm.providerConfig.lmstudio.chatModel.baseUrl")}
+      />
+
+      <SettingsTextField
+        label="Chat Model"
+        description="The identifier of the model loaded in LM Studio for chat completions"
+        {...form.register("llm.providerConfig.lmstudio.chatModel.model")}
+      />
+
+      <SettingsTextField
+        label="Embeddings Model"
+        description="The identifier of the model loaded in LM Studio for embeddings"
+        {...form.register("llm.providerConfig.lmstudio.embeddings.model")}
+      />
+
+      <SettingsTextField
+        label="Embedding Batch Size"
+        type="number"
+        {...form.register("llm.providerConfig.lmstudio.embeddings.batchSize")}
+      />
+    </>
+  );
+};
+
 export const DetailedSummarySettings: FC = () => {
   const form = useFormContext<Settings>();
   return (
@@ -265,15 +315,16 @@ export const DetailedSummarySettings: FC = () => {
         LLM Backend
       </Heading>
       <Text as="p" mb="1rem">
-        You can select a locally running LLM that is hosted through Ollama, or
-        enter an API key to have OpenAI ChatGPT API generate the summaries.
+        You can select a locally running LLM that is hosted through Ollama or LM
+        Studio, or enter an API key to have OpenAI ChatGPT API generate the
+        summaries.
       </Text>
 
       <Box position="relative">
         <RadioCards.Root
           defaultValue={form.getValues()?.llm.provider}
           onValueChange={(v) =>
-            form.setValue("llm.provider", v as "ollama" | "openai")
+            form.setValue("llm.provider", v as "ollama" | "openai" | "lmstudio")
           }
           columns={{ initial: "1", xs: "1", sm: "2", md: "3", lg: "7" }}
           mt="1rem"
@@ -282,6 +333,12 @@ export const DetailedSummarySettings: FC = () => {
             <Flex direction="column" width="100%">
               <Text weight="bold">Ollama</Text>
               <Text>A locally running Ollama instance</Text>
+            </Flex>
+          </RadioCards.Item>
+          <RadioCards.Item value="lmstudio">
+            <Flex direction="column" width="100%">
+              <Text weight="bold">LM Studio</Text>
+              <Text>A locally running LM Studio server</Text>
             </Flex>
           </RadioCards.Item>
           <RadioCards.Item value="openai">
@@ -294,6 +351,7 @@ export const DetailedSummarySettings: FC = () => {
       </Box>
 
       {form.watch("llm.provider") === "ollama" && <OllamaSettings />}
+      {form.watch("llm.provider") === "lmstudio" && <LmStudioSettings />}
       {form.watch("llm.provider") === "openai" && <OpenAiSettings />}
     </>
   );

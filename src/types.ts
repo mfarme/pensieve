@@ -80,7 +80,7 @@ export const defaultSettings = {
       sentenceSummary: true,
     },
     useEmbedding: true,
-    provider: "ollama" as "ollama" | "openai",
+    provider: "ollama" as "ollama" | "openai" | "lmstudio",
     providerConfig: {
       ollama: {
         chatModel: {
@@ -104,6 +104,16 @@ export const defaultSettings = {
         embeddings: {
           model: "text-embedding-3-large",
           dimensions: 1536,
+          batchSize: 20,
+        },
+      },
+      lmstudio: {
+        chatModel: {
+          baseUrl: "http://localhost:1234",
+          model: "",
+        },
+        embeddings: {
+          model: "",
           batchSize: 20,
         },
       },
