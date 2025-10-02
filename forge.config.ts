@@ -117,18 +117,35 @@ const config: ForgeConfig = {
           path.join(ffmpegBase, "win/x64/ffmpeg.exe"),
           path.join(target, "ffmpeg.exe"),
         );
-        await fs.copy(
-          path.join(whisperBase, "whisper-bin-x64/main.exe"),
-          path.join(target, "whisper.exe"),
-        );
-        await fs.copy(
-          path.join(whisperBase, "whisper-bin-x64/SDL2.dll"),
-          path.join(target, "SDL2.dll"),
-        );
-        await fs.copy(
-          path.join(whisperBase, "whisper-bin-x64/whisper.dll"),
-          path.join(target, "whisper.dll"),
-        );
+        
+        // Use custom-built Vulkan-enabled whisper.exe if available, otherwise fallback to npm package
+        const customWhisperPath = path.join(target, "whisper.exe");
+        if (!await fs.pathExists(customWhisperPath)) {
+          console.log("Custom whisper.exe not found, using npm package version (CPU only)");
+          await fs.copy(
+            path.join(whisperBase, "whisper-bin-x64/main.exe"),
+            path.join(target, "whisper.exe"),
+          );
+          await fs.copy(
+            path.join(whisperBase, "whisper-bin-x64/SDL2.dll"),
+            path.join(target, "SDL2.dll"),
+          );
+          await fs.copy(
+            path.join(whisperBase, "whisper-bin-x64/whisper.dll"),
+            path.join(target, "whisper.dll"),
+          );
+        } else {
+          console.log("Using custom-built whisper.exe with Vulkan GPU support");
+          
+          // Check if Vulkan shaders are present and copy them
+          const vulkanShadersPath = path.join(target, "vulkan-shaders.spv");
+          if (await fs.pathExists(vulkanShadersPath)) {
+            console.log("Vulkan shaders found - GPU acceleration will be available");
+          } else {
+            console.log("Warning: Vulkan shaders not found - GPU acceleration may not work");
+            console.log("Expected shader directory at:", vulkanShadersPath);
+          }
+        }
       }
 
       if (platform === "win32" && arch === "ia32") {
