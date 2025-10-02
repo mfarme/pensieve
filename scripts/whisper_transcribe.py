@@ -10,6 +10,13 @@ import whisper
 import torch
 from pathlib import Path
 
+# Force UTF-8 encoding for stdout to handle Unicode characters in transcriptions
+# This prevents 'charmap' codec errors on Windows
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr.reconfigure(encoding='utf-8')
+
 # Add ffmpeg from Pensieve's extra folder to PATH
 # In packaged app, the script is in the same directory as ffmpeg (extraResources)
 # In dev, the script is in scripts/ and ffmpeg is in extra/
