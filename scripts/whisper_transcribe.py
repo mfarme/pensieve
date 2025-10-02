@@ -11,8 +11,17 @@ import torch
 from pathlib import Path
 
 # Add ffmpeg from Pensieve's extra folder to PATH
-script_dir = Path(__file__).parent.parent
-extra_dir = script_dir / "extra"
+# In packaged app, the script is in the same directory as ffmpeg (extraResources)
+# In dev, the script is in scripts/ and ffmpeg is in extra/
+script_dir = Path(__file__).parent
+
+# Check if we're in the packaged app (script and ffmpeg in same dir)
+if (script_dir / "ffmpeg.exe").exists():
+    extra_dir = script_dir
+else:
+    # Dev environment - go up one level and into extra/
+    extra_dir = script_dir.parent / "extra"
+
 if extra_dir.exists():
     os.environ["PATH"] = str(extra_dir) + os.pathsep + os.environ.get("PATH", "")
 

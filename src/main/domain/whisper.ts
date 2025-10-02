@@ -17,7 +17,11 @@ const pythonPath = "py";
 const pythonArgs = ["-3.12"];
 
 // Path to our GPU-accelerated Whisper script
-const whisperScriptPath = path.join(process.cwd(), "scripts", "whisper_transcribe.py");
+// In production, the script is copied to extraResources during packaging
+// In dev mode, it's in the scripts/ folder
+const whisperScriptPath = process.env.NODE_ENV === "development"
+  ? path.join(__dirname, "../../scripts", "whisper_transcribe.py")
+  : path.join(getExtraResourcesFolder(), "whisper_transcribe.py");
 
 export const processWavFile = async (
   input: string,

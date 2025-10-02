@@ -111,6 +111,11 @@ const config: ForgeConfig = {
       );
       const target = path.join(__dirname, "extra");
       await fs.ensureDir(target);
+      
+      // Copy Python whisper script to extra resources
+      const scriptsSource = path.join(__dirname, "scripts", "whisper_transcribe.py");
+      const scriptsTarget = path.join(target, "whisper_transcribe.py");
+      await fs.copy(scriptsSource, scriptsTarget);
 
       if (platform === "win32" && arch === "x64") {
         await fs.copy(
