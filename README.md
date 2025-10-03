@@ -1,6 +1,6 @@
 # Pensieve
 
-> Desktop app for recording meetings or memos from locally running apps and transcribing and summarizing them with a local LLM
+> Desktop app for recording meetings or memos from locally running apps and transcribing and summarizing them with a local LLM. My fork modifies the original to use GPU accelerated Whisper using Pytorch, extends transcription length capability, and allows for LM Studio as an alternative to Ollama for summarization and embeddings. 
 
 <div align="center">
     <a href="https://github.com/lukasbach/pensieve/releases/latest">

@@ -1,34 +1,24 @@
-const defineModel = (name: string, size: string) => ({
+// PyTorch Whisper models - downloaded automatically on first use
+const defineModel = (name: string, size: string, isEnglishOnly: boolean = false) => ({
   name,
-  fileName: `${name}.bin`,
-  isQuantized: name.includes("q5") || name.includes("q8"),
-  url: `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/${name}.bin?download=true`,
   size,
+  isEnglishOnly,
 });
 
 export const modelData = [
-  defineModel("ggml-base-q5_1", "59.7MB"),
-  defineModel("ggml-base.en-q5_1", "59.7MB"),
-  defineModel("ggml-base.en", "148MB"),
-  defineModel("ggml-large-v1", "3.09GB"),
-  defineModel("ggml-large-v2-q5_0", "1.08GB"),
-  defineModel("ggml-large-v2", "3.09GB"),
-  defineModel("ggml-large-v3-q5_0", "1.08GB"),
-  defineModel("ggml-large-v3", "3.1GB"),
-  defineModel("ggml-large-v3-turbo-q5_0", "1.08GB"),
-  defineModel("ggml-medium-q5_0", "539MB"),
-  defineModel("ggml-medium", "1.53GB"),
-  defineModel("ggml-medium.en-q5_0", "539MB"),
-  defineModel("ggml-medium.en", "1.53GB"),
-  defineModel("ggml-small-q5_1", "190MB"),
-  defineModel("ggml-small", "488MB"),
-  defineModel("ggml-small.en-q5_1", "190MB"),
-  defineModel("ggml-small.en", "488MB"),
-  defineModel("ggml-tiny-q5_1", "32.2MB"),
-  defineModel("ggml-tiny", "77.7MB"),
-  defineModel("ggml-tiny.en-q5_1", "32.2MB"),
-  defineModel("ggml-tiny.en-q8_0", "43.6MB"),
-  defineModel("ggml-tiny.en", "77.7MB"),
+  defineModel("tiny", "~39MB", false),
+  defineModel("tiny.en", "~39MB", true),
+  defineModel("base", "~74MB", false),
+  defineModel("base.en", "~74MB", true),
+  defineModel("small", "~244MB", false),
+  defineModel("small.en", "~244MB", true),
+  defineModel("medium", "~769MB", false),
+  defineModel("medium.en", "~769MB", true),
+  defineModel("large", "~1550MB", false),
+  defineModel("large-v1", "~1550MB", false),
+  defineModel("large-v2", "~1550MB", false),
+  defineModel("large-v3", "~1550MB", false),
+  defineModel("turbo", "~809MB", false),
 ].reduce(
   (acc, model) => {
     acc[model.name] = model;

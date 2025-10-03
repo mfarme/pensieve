@@ -128,22 +128,20 @@ export const defaultSettings = {
     mp3Filter: "amix=inputs=2:duration=longest",
   },
   whisper: {
-    model: "ggml-base-q5_1",
-    threads: 4,
-    processors: 1,
-    maxContext: -1,
-    maxLen: 0,
-    splitOnWord: false,
-    bestOf: 5,
-    beamSize: 5,
-    audioCtx: 0,
-    wordThold: 0.01,
-    entropyThold: 2.4,
-    logprobThold: -1,
+    model: "base",
+    language: "auto",
     translate: false,
     diarize: true,
-    noFallback: false,
-    language: "auto",
+    // PyTorch-specific settings
+    device: "auto", // "auto", "cuda", "cpu"
+    fp16: true, // Use FP16 precision on GPU for faster inference
+    temperature: 0, // Temperature for sampling (0 = greedy, higher = more random)
+    compressionRatioThreshold: 2.4, // Gzip compression ratio threshold for failed decoding
+    logprobThreshold: -1.0, // Log probability threshold for failed decoding
+    noSpeechThreshold: 0.6, // Probability threshold for no speech detection
+    conditionOnPreviousText: true, // Condition on previous text for better context
+    initialPrompt: "", // Initial prompt to guide the model
+    wordTimestamps: false, // Extract word-level timestamps
   },
   datahooks: {
     enabled: false,

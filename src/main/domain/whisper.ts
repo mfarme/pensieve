@@ -38,26 +38,39 @@ export const processWavFile = async (
 
   const settings = (await getSettings()).whisper;
   
-  // Map Pensieve model names to Whisper model sizes
-  // modelId format: "ggml-base.bin" or "large-v3-turbo-q5_0" -> whisper model name
-  let modelSize = modelId
-    .replace("ggml-", "")
-    .replace(".bin", "")
-    .replace(/-q\d_\d/, "");  // Remove quantization suffix like -q5_0, -q4_0, etc.
+  // modelId is now the PyTorch model name directly (e.g., "base", "large-v3", "turbo")
+  const modelSize = modelId;
   
-  // Map turbo variants
-  if (modelSize === "large-v3-turbo") {
-    modelSize = "turbo";  // OpenAI Whisper uses "turbo" not "large-v3-turbo"
-  }
-  
-  // Build arguments for Python Whisper script
+  // Build arguments for Python Whisper script with PyTorch parameters
   const args = [
     ...pythonArgs,
     whisperScriptPath,
     input,
     modelSize,
-    settings.language || "auto"
+    settings.language === "auto" ? "" : settings.language, // Empty string for auto-detection
+    "--device", settings.device,
+    "--temperature", settings.temperature.toString(),
+    "--compression_ratio_threshold", settings.compressionRatioThreshold.toString(),
+    "--logprob_threshold", settings.logprobThreshold.toString(),
+    "--no_speech_threshold", settings.noSpeechThreshold.toString(),
   ];
+  
+  // Add optional flags
+  if (!settings.fp16) {
+    args.push("--no-fp16");
+  }
+  if (settings.translate) {
+    args.push("--translate");
+  }
+  if (!settings.conditionOnPreviousText) {
+    args.push("--no-condition-on-previous-text");
+  }
+  if (settings.wordTimestamps) {
+    args.push("--word-timestamps");
+  }
+  if (settings.initialPrompt) {
+    args.push("--initial-prompt", settings.initialPrompt);
+  }
 
   log.info("Processing wav file with GPU-accelerated Whisper", pythonPath, args);
 

@@ -9,46 +9,37 @@ import {
   Text,
 } from "@radix-ui/themes";
 import { useFormContext } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
-import { HiOutlineFolderOpen } from "react-icons/hi2";
 import { GoLinkExternal } from "react-icons/go";
 import { modelData } from "../../model-data";
 import { Settings } from "../../types";
-import { QueryKeys } from "../../query-keys";
-import { mainApi, modelsApi } from "../api";
+import { mainApi } from "../api";
 import { SettingsTextField } from "./settings-text-field";
 import { SettingsSwitchField } from "./settings-switch-field";
 import { SettingsTab } from "./tabs";
 import { SettingsField } from "./settings-field";
+import { SettingsSelectField } from "./settings-select-field";
 
 export const WhisperSettings: FC = () => {
   const form = useFormContext<Settings>();
 
-  const { data: installedModels } = useQuery({
-    queryKey: [QueryKeys.HasModel],
-    queryFn: modelsApi.listModels,
-  });
-
   return (
     <Tabs.Content value={SettingsTab.Whisper}>
-      <Heading>Whisper transcription model</Heading>
+      <Heading>PyTorch Whisper Transcription Model</Heading>
       <Text as="p">
-        The whisper AI model that is used to transcribe the audio file. If the
-        model is not yet downloaded, it will be downloaded the first time it is
-        used. Larger models have higher CPU and RAM demands, but produce better
-        results.
+        Select the Whisper AI model for audio transcription. Models will be
+        downloaded automatically on first use by PyTorch. Larger models require
+        more GPU memory and processing time but produce better results.
       </Text>
       <Text as="p" mt=".3rem">
-        Quantized models are smaller and faster, with only small reductions in
-        accuracy, and are recommended for most users. English models are
-        optimized for English language audio files.
+        English-only models (.en) are optimized for English audio and may provide
+        better results for English-only content. The "turbo" model is a faster
+        variant of large-v3.
       </Text>
-      {/* <TextField.Root {...form.register("whisper.model")} /> */}
 
       <RadioCards.Root
         defaultValue={form.getValues()?.whisper?.model}
         onValueChange={(v) => form.setValue("whisper.model", v)}
-        columns={{ initial: "1", xs: "1", sm: "2", md: "3", lg: "7" }}
+        columns={{ initial: "1", xs: "1", sm: "2", md: "3", lg: "5" }}
         mt="1rem"
       >
         {Object.values(modelData).map((model) => (
@@ -56,166 +47,126 @@ export const WhisperSettings: FC = () => {
             <Flex direction="column" width="100%">
               <Text weight="bold">{model.name}</Text>
               <Flex mt="4px" gap=".2rem" wrap="wrap">
-                <Badge>{model.size}</Badge>
-                {model.isQuantized && <Badge color="plum">Quantized</Badge>}
-                {model.name.includes(".en") && <Badge>English</Badge>}
-                {installedModels?.includes(model.fileName) && (
-                  <Badge color="green">Installed</Badge>
-                )}
+                <Badge color="blue">{model.size}</Badge>
+                {model.isEnglishOnly && <Badge color="green">English</Badge>}
               </Flex>
             </Flex>
           </RadioCards.Item>
         ))}
-        {installedModels
-          ?.filter(
-            (fileName) =>
-              fileName.endsWith(".bin") &&
-              !Object.values(modelData).some((m) => m.fileName === fileName),
-          )
-          .map((fileName) => {
-            const modelName = fileName.replace(".bin", "");
-            return (
-              <RadioCards.Item key={modelName} value={modelName}>
-                <Flex direction="column" width="100%">
-                  <Text weight="bold">{modelName}</Text>
-                  <Flex mt="4px" gap=".2rem" wrap="wrap">
-                    <Badge color="cyan">Custom Model</Badge>
-                    <Badge color="green">Installed</Badge>
-                  </Flex>
-                </Flex>
-              </RadioCards.Item>
-            );
-          })}
       </RadioCards.Root>
 
       <SettingsField
-        label="Custom model file"
-        description="You can also download one of the models listed above yourself, and place it in your models folder. It will then show up as installed in the list above."
+        label="More information"
+        description="PyTorch Whisper models are downloaded from OpenAI's official model repository on first use."
       >
         <Flex gap="0.5rem">
           <Button
             type="button"
             variant="outline"
-            onClick={() => {
-              mainApi.openModelsFolder();
-            }}
-          >
-            <HiOutlineFolderOpen /> Models Folder
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
             onClick={async () => {
               await mainApi.openWeb(
-                "https://huggingface.co/ggerganov/whisper.cpp/tree/main",
+                "https://github.com/openai/whisper",
               );
             }}
           >
-            <GoLinkExternal /> huggingface.co/ggerganov/whisper.cpp
+            <GoLinkExternal /> OpenAI Whisper on GitHub
           </Button>
         </Flex>
       </SettingsField>
 
-      <Heading mt="2rem">Whisper configuration</Heading>
+      <Heading mt="2rem">PyTorch Configuration</Heading>
 
-      <SettingsTextField
-        {...form.register("whisper.threads")}
-        label="Thread count"
-        type="number"
-      />
-
-      <SettingsTextField
-        {...form.register("whisper.processors")}
-        label="Processor count"
-        type="number"
-      />
-
-      <SettingsTextField
-        {...form.register("whisper.maxContext")}
-        label="Maximum context"
-        description="Maximum number of text context tokens to store."
-        type="number"
-      />
-
-      <SettingsTextField
-        {...form.register("whisper.maxLen")}
-        label="Maximum Segment length"
-        description="Maximum segment length in characters."
-        type="number"
+      <SettingsSelectField
+        label="Device"
+        description="Select device for inference. 'auto' will use GPU if available, otherwise CPU."
+        form={form}
+        field="whisper.device"
+        values={{
+          auto: "Auto (GPU if available)",
+          cuda: "GPU (CUDA)",
+          cpu: "CPU",
+        }}
       />
 
       <SettingsSwitchField
         form={form}
-        field="whisper.splitOnWord"
-        label="Split on Word"
-        description="Split on word rather than on token"
+        field="whisper.fp16"
+        label="FP16 Precision"
+        description="Use half-precision (FP16) on GPU for faster inference with minimal quality loss"
       />
 
       <SettingsTextField
-        {...form.register("whisper.bestOf")}
-        label="Best of"
-        description="Number of best candidates to keep"
+        {...form.register("whisper.temperature")}
+        label="Temperature"
+        description="Sampling temperature (0 = greedy/deterministic, higher = more random). Use 0 for most accurate results."
         type="number"
+        step="0.1"
       />
 
       <SettingsTextField
-        {...form.register("whisper.beamSize")}
-        label="Beam Size"
-        description="Beam size for beam search"
+        {...form.register("whisper.compressionRatioThreshold")}
+        label="Compression Ratio Threshold"
+        description="Gzip compression ratio threshold for failed decoding detection. Higher values are more permissive."
         type="number"
+        step="0.1"
       />
 
       <SettingsTextField
-        {...form.register("whisper.audioCtx")}
-        label="Audio Context"
-        description="Audio context size"
+        {...form.register("whisper.logprobThreshold")}
+        label="Log Probability Threshold"
+        description="Average log probability threshold for failed decoding detection. Values closer to 0 are more permissive."
         type="number"
+        step="0.1"
       />
 
       <SettingsTextField
-        {...form.register("whisper.wordThold")}
-        label="Word threshold"
-        description="Word timestamp probability threshold"
+        {...form.register("whisper.noSpeechThreshold")}
+        label="No Speech Threshold"
+        description="Probability threshold for detecting segments with no speech. Lower values detect more speech."
         type="number"
+        step="0.1"
+      />
+
+      <SettingsSwitchField
+        form={form}
+        field="whisper.conditionOnPreviousText"
+        label="Condition on Previous Text"
+        description="Use previous segment text as context for better continuity and accuracy"
       />
 
       <SettingsTextField
-        {...form.register("whisper.entropyThold")}
-        label="Entropy threshold"
-        description="Entropy threshold for decoder fail"
-        type="number"
+        {...form.register("whisper.initialPrompt")}
+        label="Initial Prompt"
+        description="Optional text to guide the model's style and context. Can include names, terminology, or formatting hints."
       />
 
+      <SettingsSwitchField
+        form={form}
+        field="whisper.wordTimestamps"
+        label="Word-level Timestamps"
+        description="Extract timestamps for individual words (increases processing time)"
+      />
+
+      <Heading mt="2rem">Language Settings</Heading>
+
       <SettingsTextField
-        {...form.register("whisper.logprobThold")}
-        label="Logprob threshold"
-        description="Log probability threshold for decoder fail"
-        type="number"
+        {...form.register("whisper.language")}
+        label="Language"
+        description='Spoken language code (e.g., "en", "es", "fr") or "auto" for automatic detection.'
       />
 
       <SettingsSwitchField
         form={form}
         field="whisper.translate"
-        label="Translate"
-        description="Translate transcription from source language to english"
+        label="Translate to English"
+        description="Translate transcription from source language to English"
       />
+
       <SettingsSwitchField
         form={form}
         field="whisper.diarize"
-        label="Diarize"
-        description="Diarize speakers based on input device, i.e. microphone and screen audio will be split into two speakers in transcript"
-      />
-      <SettingsSwitchField
-        form={form}
-        field="whisper.noFallback"
-        label="No Fallback"
-        description="Do not use temperature fallback while decoding"
-      />
-
-      <SettingsTextField
-        {...form.register("whisper.language")}
-        label="Language"
-        description={`Spoken language, "auto" for auto-detection, "en" for english.`}
+        label="Diarize Speakers"
+        description="Split microphone and screen audio into separate speakers in transcript"
       />
     </Tabs.Content>
   );
